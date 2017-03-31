@@ -1,0 +1,60 @@
+#! /usr/bin/env node
+
+// 获取各类post列表，保存到文件post_list.txt
+
+var fs = require('fs');
+var moment = require('moment');
+
+var arguments = process.argv.splice(2);
+
+var target_dir;
+if (!arguments[0]) {
+    console.error('input your markdown direction');
+    process.exit('1');
+} else {
+    md_dir = arguments[0];
+}
+
+var output = '';
+var post_list = {};
+var file_list = fs.readdirSync(md_dir);
+
+file_list.forEach(function (dir) {
+    var type_dir = md_dir + '/' + dir;
+    var stat = fs.statSync(type_dir);
+    if (stat.isDirectory()) {
+        var tmp_post = fs.readdirSync(type_dir);
+        post_list[dir] = [];
+        tmp_post.forEach(function (post) {
+            var stat = fs.statSync(type_dir + '/'  + post);
+            if (post.substr(-3) === '.md' && !stat.isDirectory()) {
+                var time =  moment(stat.mtime).format('YYYY-MM-DD HH:mm:ss');
+                var name = post.replace(/.md/i, '');
+                post_list[dir].push({
+                    output: name + '=>' + time + '\n',
+                    time: time,
+                    name: name
+                });
+            }
+        });
+    }
+});
+
+for (var key in post_list) {
+    post_list[key].sort(function (a, b) {
+        if (a.time < b.time) {
+            return 1;
+        } else if (a.time > b.time) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+    var output = '';
+    post_list[key].forEach(function (post) {
+        if (post.name !== 'welcome') {
+            output += post.output;
+        }
+    });
+    fs.writeFileSync(md_dir + '/' + key + '/post_list.txt', output);
+}

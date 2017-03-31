@@ -1,0 +1,114 @@
+#! /usr/local/bin/node
+
+var fs = require('fs');
+// var markdown = require("markdown").markdown;
+var moment = require('moment');
+var fileContent;
+var var_type = ['php', 'js', 'html', 'java', 'py', 'sh', 'c', 'cpp'];
+
+var arguments = process.argv.splice(2);
+if (arguments[0]) {
+    var filename = arguments[0];
+} else {
+    console.error('input your file');
+    process.exit(1);
+}
+
+try {
+    fs.accessSync(filename);
+} catch (e) {
+    console.error(e);
+    process.exit(1);
+}
+
+
+function regList(line) {
+    fileContent = line;
+    re = new RegExp('`(.*?)`', 'gi');
+    fileContent = fileContent.replace(re, '<code>$1</code>');
+
+    re = new RegExp('---', 'gi');
+    fileContent = fileContent.replace(re, '<hr>');
+
+    re = new RegExp('#### (.*?)$', 'gi');
+    fileContent = fileContent.replace(re, '<h4><b>$1</b></h4><br>');
+
+    re = new RegExp('### (.*?)$', 'gi');
+    fileContent = fileContent.replace(re, '<h3><b>$1</b></h3><hr>');
+
+    re = new RegExp('\\*\\*(.*?)\\*\\*', 'gi');
+    fileContent = fileContent.replace(re, '<b>$1</b>');
+
+    re = new RegExp('\\*(.*?)\\*', 'gi');
+    fileContent = fileContent.replace(re, '<i>$1</i>');
+
+    re = new RegExp('\\[(([^\\[\\]])*?)\\]\\((.*?)\\)', 'gi');
+    fileContent = fileContent.replace(re, '<a href="$3">$1</a>');
+
+    re = new RegExp('^> (.*?)$', 'gi');
+    fileContent = fileContent.replace(re, '<blockquote><p>$1</p></blockquote>');
+
+    return fileContent;
+}
+
+function processMD(filename) {
+    // 读入 Markdown 源文件
+    fileContent = fs.readFileSync(filename, 'utf8');
+
+    // 使用 MarkdownJS 模块把源文件转换为 HTML 源代码
+    // fileContent = markdown.toHTML(fileContent);
+
+    var re;
+
+    // 应用 google pretty code着色
+    var_type.forEach(function (lang) {
+        var langTmp = '';
+        if (lang === 'js') {
+            langTmp = 'javascript';
+        } else if (lang === 'sh') {
+            langTmp = 'bash';
+        } else {
+            langTmp = lang;
+        }
+        re = new RegExp('```' + langTmp + '((.|\n)*?)```', 'gmi'); // i:忽略大小写;g:全局匹配;m:执行多行匹配
+        fileContent = fileContent.replace(re, '<pre class="prettyprint linenums lang-' + lang + '">$1</pre>');
+    });
+
+    var isCode = false;
+    var fileSplit = fileContent.split('\n');
+    for (var i = 0, len = fileSplit.length; i < len; i++) {
+        var line = fileSplit[i];
+        if (line.match(/<pre/)) {
+            isCode = true;
+        }
+        if (isCode === false) {
+            line = regList(line);
+            if (line) {
+                line = '<p>' + line + '</p>';
+            } else {
+                line = '<br>';
+            }
+
+        }
+        if (line.match(/<\/pre>/)) {
+            isCode = false;
+        }
+        fileSplit[i] = line;
+    }
+    fileContent = fileSplit.join('\n');
+
+    // 加入创作时间
+    var stat = fs.statSync(filename);
+    var time = moment(stat.mtime).format('YYYY-MM-DD HH:mm');
+    fileContent += '\n\n创作于' + time;
+
+    return fileContent;
+
+    // 保存
+    // var target = filename.replace(/.md$/i, '.html');
+    // fs.writeFileSync(target_dir + target, fileContent);
+}
+
+var html = processMD(filename);
+console.log(html);
+

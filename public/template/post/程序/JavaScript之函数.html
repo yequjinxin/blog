@@ -1,0 +1,158 @@
+<p><h3><b>javascript中的函数</b></h3><hr></p>
+<p><h4><b>函数简介</b></h4><br></p>
+<p>函数就是为了完成一些特殊的任务而创建的<b>模块</b>，函数可以传入数据，处理数据，返回结果。函数可以被重复使用。函数可以嵌套调用。</p>
+<br>
+<p>为什么要用函数？</p>
+<p>1. 函数可以使我们的程序分解成一组子步骤（sub-steps），写出模块化的程序。</p>
+<p>2. 避免重复编写代码，实现了代码复用。</p>
+<p>3. 函数使得变量命名空间变得干净。</p>
+<p>4. 方便测试。</p>
+<br>
+<p>函数是一个黑盒（black boxes），因为我们不需要知道它是怎么工作的。只需要了解需要传入的参数和预期返回的结果，即它做了什么。</p>
+<br>
+<p>函数控制流如下</p>
+<p>1. The program comes to a line of code containing a "function call".</p>
+<p>2. The program enters the function (starts at the first line in the function code).</p>
+<p>3. All instructions inside of the function are executed from top to bottom.</p>
+<p>4. The program leaves the function and goes back to where it started from.</p>
+<p>5. Any data computed and RETURNED by the function is used in place of the function in the original line of code.</p>
+<br>
+<p><h4><b>js中的函数</b></h4><br></p>
+<p><b>变量作用域</b></p>
+<p>变量在声明它们的函数体以及这个函数体嵌套的任意函数体内都是有定义的。从变量被声明的位置我们可以将变量分为两类，函数内定义的变量叫局部变量，函数外定义的变量叫全局变量。函数是唯一能定义变量作用域的语块（注：考虑到兼容性，ES6中引入的let语句除外）。</p>
+<p>需要注意几个问题</p>
+<p>函数中声明局部变量忘记写<code>var</code>关键字，全局变量被污染了。</p>
+<pre class="prettyprint linenums lang-js">
+var name = 'lisi';
+function test() {
+    name = 'zhangsan';
+}
+test();
+console.log(name);
+</pre>
+<p>在for循环中不要忘记声明计数器</p>
+<pre class="prettyprint linenums lang-js">
+function test() {
+    var i;
+    for (i = 0; i < 10; i++) {
+        // ...
+    }
+}
+test();
+</pre>
+<br>
+<p><b>变量提升</b></p>
+<pre class="prettyprint linenums lang-js">
+var name = 'zhangsan';
+function say() {
+    console.log(name); // undefined
+    var name = 'lisi';
+}
+// 和下面注释的代码等价
+/*
+function say() {
+    var name;
+    console.log(name);
+    name = 'lisi';
+}
+*/
+say();
+</pre>
+<p>变量name存在于函数say的整个作用域中，但是该变量的值只有在执行到<code>var name = 'lisi'</code>这一行时才会初始化，在这之前的值为<code>undefined</code>，js这一特性叫做变量提升。</p>
+<p>注意：如果name无论在函数外还是函数内都没有定义，会报错<code>name is not defined</code>,终止程序运行。</p>
+<pre class="prettyprint linenums lang-js">
+function say() {
+    console.log(name); // name is not defined
+}
+say();
+</pre>
+<br>
+<p><b>再提升</b></p>
+<p>引擎控制流被函数接管，即js引擎进入函数作用域时，有2步操作</p>
+<p>1.初始化变量</p>
+<p>- 声明并初始化函数参数</p>
+<p>- 声明局部变量（包括将匿名函数赋给一个局部变量），但不初始化</p>
+<p>- 声明并初始化函数</p>
+<br>
+<p>2.执行代码</p>
+<br>
+<p>再看一个例子</p>
+<pre class="prettyprint linenums lang-js">
+var name = 'zhangsan';
+function say(name) {
+    console.log(name); // wangwu
+    /*
+     var name = 'lisi';
+     console.log(name); // lisi
+     */
+    var name;
+    console.log(name); // wangwu
+}
+say('wangwu');
+</pre>
+<p>函数<code>say</code>中的参数<code>name</code>先声明并初始化为值<code>wangwu</code>，第一个输出符合我们预期。接下来又声明了变量<code>name</code>，由于执行环境对象中已经存在<code>name</code>属性，此时<code>name</code>值并没有被<code>undefined</code>覆盖，依然为<code>wangwu</code>，以上为第一步操作，而第二步<code>name</code>没有进行初始化操作，因而值没有变化。</p>
+<p>如果我们选择用注释中的代码替换8，9行代码时，第一步和替换前完全一致，第二步中当引擎执行到<code>var name = 'lisi'</code>这一行时，<code>name</code>变量的值由<code>wangwu</code>初始化为<code>lisi</code>。</p>
+<br>
+<p>函数<code>sya</code>在运行时创建一个执行环境对象，函数中的参数、局部 变量、方法都会放入这个对象中。</p>
+<pre class="prettyprint linenums lang-js">
+{
+    name: 'wangwu'
+}
+</pre>
+<p>执行环境对象是对函数执行环境的一种抽象，不能直接访问，但每次使用变量都是在间接访问执行环境对象的属性。</p>
+<br>
+<p><b>作用域链</b></p>
+<p>js寻找变量先在局部执行环境对象上寻找，如果没定义，则到创建它的执行环境中去，并且在该执行环境对象中查找变量的定义，以此类推，直到找到定义或者到达全局作用域为止，也就是说，在查找一个变量的值时，结果可能来自作用域链上的任何地方。</p>
+<p>全局变量是执行环境顶层对象的属性，这个顶层对象在浏览器中是<code>window</code>对象，在Node.js中，顶层对象叫做<code>global</code>。</p>
+<br>
+<p><b>函数是对象</b></p>
+<p>js中的函数比其他编程语言承担了更多的角色。函数是对象，因此函数可以赋值给变量，也可以作为函数的参数。</p>
+<br>
+<p>函数对象</p>
+<pre class="prettyprint linenums lang-js">
+function f1(str) {
+    console.log(str)
+}
+var f2 = function (str) {
+    console.log(str);
+};
+var f3 = new Function('str', 'console.log(str)');
+</pre>
+<br>
+<p>普通对象</p>
+<pre class="prettyprint linenums lang-js">
+var o1 = {};
+var o2 = new Object();
+</pre>
+<br>
+<p>一提起对象，我们就想起对象应具有三大特性，封装、继承、多态。</p>
+<p>函数本身是对象，但我们也可以通过函数来实现传统语言中的对象。</p>
+<p>我们先用构造函数创建一个对象</p>
+<pre class="prettyprint linenums lang-js">
+function People(name, id) {
+    this.name = name;
+    this.id = id;
+}
+var zhangsan = new People('zhangsan', 'No.1');
+var lisi = new People('lisi', 'No.2');
+People('wangwu', 'No.3');
+console.log(zhangsan.name); // zhangsan
+console.log(lisi.id); // No.2
+console.log(window.name); // wangwu
+</pre>
+<p>函数<code>People</code>是一个构造函数，通过关键字<code>new</code>创建一个对象，将构造方法中的this指针指向该对象。去掉<code>new</code>，构造函数中的<code>this</code>指向了<code>window</code>。如果没有<code>new</code>，就是一个普通函数的调用过程。</p>
+<br>
+<p>封装和多态与其他语言差异不大，继承的实现上就迥异了。</p>
+<p><code>zhangsan</code>和<code>lisi</code>都具有人的通用属性，如果我们把人的通用属性全在<code>People</code>中定义并初始化一遍，那么每创建一个对象都要执行一遍这个过程，显然不合理。我们需要将这些属性放到原型中。</p>
+<br>
+<p><b>原型（prototype）</b></p>
+<p>关于原型以及原型链见参考资料[2]。</p>
+<br>
+<br>
+<p>[1] <a href="http://www.cs.utah.edu/~germain/PPS/Topics/functions.html">Functions</a></p>
+<p>[2] <a href="http://www.jianshu.com/p/f69d8767c066">《JavaScript 闯关记》之原型及原型链</a></p>
+<p>[3] 《单页web应用：JavaScript从前端到后端》作者：Michael Mikowski</p>
+<p>[4] <a href="http://c.ranlau.com/index.php?a=main&pro_id=19">测试支持</a></p>
+<br>
+
+创作于2017-03-24 18:29

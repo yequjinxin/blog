@@ -1,0 +1,52 @@
+#! /usr/bin/env node
+
+var fs = require('fs');
+var execSync = require('child_process').execSync;
+
+var pwd = execSync('pwd').toString().replace(/\n$/, '');
+var md_dir = pwd + '/../public/markdown';
+var tpl_dir = pwd + '/../public/template';
+
+
+
+var type_list = fs.readdirSync(md_dir);
+type_list.forEach(function (type) {
+    var type_dir = md_dir + '/'  + type;
+    var stat = fs.statSync(type_dir);
+    if (stat.isDirectory()) {
+        var post_list = fs.readdirSync(type_dir);
+        post_list.forEach(function (post) {
+            var post_dir = type_dir + '/' + post;
+            var stat = fs.statSync(post_dir);
+            if (post.substr(-3) === '.md' && !stat.isDirectory()) {
+                var cmd = pwd + '/md2html ' + post_dir;
+                var ret = execSync(cmd);
+
+                var obj_dir = tpl_dir + '/post/'  + type;
+                if (!fs.existsSync(obj_dir)) {
+                    console.log(obj_dir);
+                    fs.mkdirSync(obj_dir);
+                }
+                fs.writeFileSync(obj_dir + '/' + post.replace(/.md/, '.html'), ret.toString());
+            }
+        });
+    }
+});
+
+
+/*
+var md_list = fs.readdirSync(md_dir);
+md_list.forEach(function (file) {
+    var full_path = md_dir + '/'  + file;
+    var stat = fs.statSync(full_path);
+    if (file.substr(-3) === '.md' && !stat.isDirectory()) {
+        var cmd = pwd + '/md2html ' + full_path;
+        var ret = execSync(cmd);
+        fs.writeFileSync(tpl_dir + '/post/' + file.replace(/.md/, '.html'), ret.toString());
+    }
+});
+*/
+// #######################################################################################
+// post_list
+var cmd = pwd + '/post_list ' + md_dir;
+execSync(cmd);

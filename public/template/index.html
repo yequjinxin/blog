@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>代码君的博客</title>
+    <meta name="uyan_auth" content="01796941a2">
+    <link rel="stylesheet" href="/public/lib/bootstrap/css/bootstrap.min.css">
+    
+    <script src="/public/js/jquery.js"></script>
+    <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/public/lib/google-code-prettify/run_prettify.js"></script>
+    <link rel="stylesheet" href="/public/lib/google-code-prettify/skins/atelier-forest-light.min.css">
+    <style type="text/css">
+      .my-page-header {
+        border-bottom: 1px solid #eee;
+        position: fixed;
+        width: 100%;
+        z-index: 20;
+        background: #99CCCC;
+        opacity: 0.9;
+      }
+      .my-page-header h4 {
+        float: left;
+        margin-left: 10px;
+        margin-right: 20px;
+      }
+
+      #my-nav {
+        float: left;
+        height: inherit;
+        margin: 0;
+        padding-left: 1px;
+      }
+      #my-nav li {
+        list-style: none;
+        float: left;
+        height: inherit;
+        border-right: solid 1px #CCCCCC;
+      }
+      #my-nav li:first-child {
+        border-left: solid 1px #CCCCCC;
+      }
+      #my-nav li a {
+        display: block;
+        height: inherit;
+        padding: 10px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      #my-nav li a:hover {
+        background-color: #669999;
+      }
+      #my-nav li a.active {
+        background-color: #CCCC99;
+      }
+      #my-footer {
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: #99CCCC;
+        color: #FFFFFF;
+      }
+      #my-footer p {
+        margin: 0;
+      }
+      body {
+        background: #fff url('public/img/noise.png');
+      }
+      #post-content a:hover {
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <input id="post-type" type="hidden" value="<%= type %>">
+    <input id="url" type="hidden" value="<%= url %>">
+
+    <div class="my-page-header">
+      <h4><a href="/">代码君</a> <small><a href="mailto:juncoder@outlook.com>">juncoder@outlook.com></a></small></h4>
+      <ul id="my-nav">
+        <% type_list.forEach(function (value) { %>
+        <li><a <% if (value == type) { %>class="active"<% } %>><%= value %></a></li>
+        <% }); %>
+      </ul>
+    </div>
+
+    <div id="my-container" class="container">
+      <ol id="my-breadcrumb" class="breadcrumb col-sm-12">
+        <li><a href="/<%= type %>"><%= type %></a></li>
+        <li class="active"><%= post %></li>
+      </ol>
+      <% if (post_list.length !== 0) { %>
+      <div id="post-list" class="list-group col-sm-3">
+        <% post_list.forEach(function (value) { %>
+        <a href="javascript:void(0)" class="list-group-item<% if (value.active) { %> active<% } %>">
+          <%= value.name %>
+        </a>
+        <% }); %>
+      </div>
+      <% } else { %>
+      <div id="post-list" class="list-group col-sm-0"></div>
+      <% } %>
+      <div class="panel panel-default <% if (post_list.length === 0) { %>col-sm-12<% } else { %>col-sm-9<% } %>">
+        <div id="post-content" class="panel-body">
+        <%- include(post_path) %>
+        </div>
+        <hr>
+        <div id="disqus_thread"></div>
+        <script>
+            /**
+             *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+             *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+             var disqus_config = function () {
+                this.page.url = '<%= url_page %>';  // Replace PAGE_URL with your page's canonical URL variable
+                this.page.identifier = '<%= identifier %>'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+             };
+            (function() { // DON'T EDIT BELOW THIS LINE
+                var d = document, s = d.createElement('script');
+                s.src = 'https://dai-ma-jun.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+      </div>
+    </div>
+    <div id="my-footer">
+      <p>&copy; 2017 代码君</p>
+    </div>
+
+    <script>
+        function resize() {
+            var height = $('.my-page-header').height();
+            $('#my-container').css('padding-top', height + 5);
+        }
+        $(window).resize(resize);
+        resize();
+    </script>
+    <script src="/public/js/main.js"></script>
+  </body>
+</html>
